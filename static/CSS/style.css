@@ -496,7 +496,7 @@ html {
 /* Lyric Gen */
 .lyric-header{
     width: 100%;
-    height: 100vh;
+    height: 50vh;
     background-image: linear-gradient(rgba(4,9,30,0.7),rgba(4,9,30,0.7)),url(music.png);
     background-position: center;
     background-size: cover;
@@ -588,8 +588,8 @@ html {
     border-radius: 4px;
 }
 
-#select{
-    background: #646970;
+#select {
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -664,5 +664,3 @@ html {
     object-fit: relative;
     border-radius: 5px;
 }
-
-

@@ -111,7 +111,7 @@ def lyric():
     artist = request.form["artist1"]
     from openai_key import key 
     
-    prompt_text = "Artist: {} \n\nTopic: {} Lyrics:\n".format(artist, topic)
+    prompt_text = "Artist: {} \n\nTopic: {} \n\nLyrics:\n".format(artist, topic)
 
     import openai
     openai.api_key = key
@@ -124,16 +124,62 @@ def lyric():
     stop=["\n###END"]
 )
 
-    lyric_string = "".join(prompt_text + response['choices'][0]['text'])
+    lyric_string = "".join(response['choices'][0]['text'])
     # lyric_string = lyric_string.replace('[','').replace(']','')        # prediction_string = "".join(prompt_text)
         # prediction_string = prediction_string.replace('[','').replace(']','')
     # options = request.form.getlist("options")
     # request.method == 'POST'
     # prompt_text = request.form.get('input')
     # prediction_string = "".join(prompt_text)
-    return render_template('lyric_gen.html', topic=topic, lyric_string=lyric_string, artist=artist)
+    
+    def format_lyrics(lyrics):
+        from string import ascii_letters, punctuation
+        nl_char_after = "])"
+        nl_char_before = "["
+        
+        allowed = set(ascii_letters)
+        allowed_punc = set(punctuation)
+        allowed |= allowed_punc
+        allowed |= set(" ")
+        
+        lyric_str = ""
+        prev_char = ""
+        for char in lyrics:
+            if char in allowed:
+                if char in nl_char_after:
+                    lyric_str = lyric_str + char + "\n"
+                elif char in nl_char_before or ((prev_char not in allowed) and char.isupper()):
+                    lyric_str = lyric_str + "\n" + char
+                else:
+                    lyric_str = lyric_str + char
+                prev_char = char
+            else:
+                prev_char = char
 
-
+        new_str = ""
+        for index in range(0, len(lyric_str)):
+            if lyric_str[index] == '#':
+                break
+            if index+1 == len(lyric_str):
+                new_str = new_str + lyric_str[index]
+                break
+            else:
+                prev = lyric_str[index]
+                after = lyric_str[index+1]
+                if prev in allowed_punc or prev == " ":
+                    new_str = new_str + prev
+                elif prev.islower() and after.isupper():
+                    new_str = new_str + prev + "\n"
+                else:
+                    new_str = new_str + prev
+        # Remove any double spaces
+        import re
+        new_str = re.sub(' +', ' ', new_str)
+        return new_str
+    import string
+    lyric_array = format_lyrics(lyric_string)
+    lyric_array = lyric_array.split('\n')
+    return render_template('lyric_gen.html', topic=topic, lyric_string=lyric_array, artist=artist)
 
 
 if __name__ == '__main__':
